@@ -166,7 +166,21 @@ class Goal(BaseModel):
         """Check if a specific constraint is satisfied."""
         for c in self.constraints:
             if c.id == constraint_id:
-                # This would be expanded with actual evaluation logic
+                # constraints are needed to provide boundaries for completing Goals
+                if not c.check:  # If no check like 'v < 100', no need to evaluate if met"
+                    return True
+                
+                try:
+                    eval_context = {"value": value, "len": len}
+                   
+                    # __builtins__ used to prevent malicious constraints using function calls
+                    result = eval(c.check, {"__builtins__": {}}, eval_context)  
+                    
+                    return bool(result)
+                    
+                except Exception as e:
+                    print(f"Error evaluating constraint '{c.id}': {e}")
+                    return False
                 return True
         return True
 
